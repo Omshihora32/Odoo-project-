@@ -1,0 +1,330 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PROCUREMENT_OFFICER
+  VENDOR
+  MANAGER
+}
+
+enum VendorCategory {
+  IT_HARDWARE
+  IT_SOFTWARE
+  OFFICE_SUPPLIES
+  RAW_MATERIALS
+  LOGISTICS
+  CONSULTING
+  MAINTENANCE
+  ELECTRICAL
+  CONSTRUCTION
+  OTHER
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+  BLACKLISTED
+  PENDING
+}
+
+enum RFQStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  CANCELLED
+}
+
+enum RFQVendorStatus {
+  INVITED
+  QUOTED
+  DECLINED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SUBMITTED
+  ACCEPTED
+  REJECTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum POStatus {
+  DRAFT
+  APPROVED
+  SENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  firstName      String
+  lastName       String
+  phone          String?
+  role           Role            @default(VENDOR)
+  avatar         String?
+  country        String?
+  additionalInfo String?
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  vendor         Vendor?
+  rfqs           RFQ[]           @relation("CreatedRFQs")
+  approvals      Approval[]
+  activityLogs   ActivityLog[]
+  notifications  Notification[]
+
+  @@map("users")
+}
+
+model Vendor {
+  id             String          @id @default(uuid())
+  companyName    String
+  gstNumber      String?
+  category       VendorCategory  @default(OTHER)
+  contactName    String
+  email          String
+  phone          String?
+  address        String?
+  country        String?
+  status         VendorStatus    @default(PENDING)
+  rating         Float           @default(0)
+  performanceScore Float         @default(0)
+  userId         String          @unique
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rfqVendors     RFQVendor[]
+  quotations     Quotation[]
+  purchaseOrders PurchaseOrder[]
+  invoices       Invoice[]
+
+  @@map("vendors")
+}
+
+model RFQ {
+  id             String          @id @default(uuid())
+  rfqNumber      String          @unique
+  title          String
+  description    String?
+  category       VendorCategory  @default(OTHER)
+  deadline       DateTime
+  status         RFQStatus       @default(DRAFT)
+  createdById    String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  createdBy      User            @relation("CreatedRFQs", fields: [createdById], references: [id])
+  items          RFQItem[]
+  vendors        RFQVendor[]
+  quotations     Quotation[]
+  approvals      Approval[]
+  purchaseOrders PurchaseOrder[]
+
+  @@map("rfqs")
+}
+
+model RFQItem {
+  id             String          @id @default(uuid())
+  rfqId          String
+  itemName       String
+  quantity       Float
+  unit           String
+  expectedPrice  Float?
+  createdAt      DateTime        @default(now())
+
+  rfq            RFQ             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  quotationItems QuotationItem[]
+
+  @@map("rfq_items")
+}
+
+model RFQVendor {
+  id             String          @id @default(uuid())
+  rfqId          String
+  vendorId       String
+  status         RFQVendorStatus @default(INVITED)
+  createdAt      DateTime        @default(now())
+
+  rfq            RFQ             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor         Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([rfqId, vendorId])
+  @@map("rfq_vendors")
+}
+
+model Quotation {
+  id              String           @id @default(uuid())
+  quotationNumber String           @unique
+  rfqId           String
+  vendorId        String
+  totalAmount     Float            @default(0)
+  deliveryDays    Int              @default(0)
+  notes           String?
+  status          QuotationStatus  @default(DRAFT)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  rfq             RFQ              @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor          Vendor           @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  items           QuotationItem[]
+  approvals       Approval[]
+  purchaseOrders  PurchaseOrder[]
+
+  @@unique([rfqId, vendorId])
+  @@map("quotations")
+}
+
+model QuotationItem {
+  id             String          @id @default(uuid())
+  quotationId    String
+  rfqItemId      String
+  unitPrice      Float
+  totalPrice     Float
+  createdAt      DateTime        @default(now())
+
+  quotation      Quotation       @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  rfqItem        RFQItem         @relation(fields: [rfqItemId], references: [id], onDelete: Cascade)
+
+  @@map("quotation_items")
+}
+
+model Approval {
+  id             String          @id @default(uuid())
+  rfqId          String
+  quotationId    String
+  approverId     String
+  status         ApprovalStatus  @default(PENDING)
+  comments       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  rfq            RFQ             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  quotation      Quotation       @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  approver       User            @relation(fields: [approverId], references: [id])
+  purchaseOrders PurchaseOrder[]
+
+  @@map("approvals")
+}
+
+model PurchaseOrder {
+  id              String          @id @default(uuid())
+  poNumber        String          @unique
+  rfqId           String
+  quotationId     String
+  vendorId        String
+  approvalId      String?
+  subtotal        Float           @default(0)
+  gstAmount       Float           @default(0)
+  grandTotal      Float           @default(0)
+  status          POStatus        @default(DRAFT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  rfq             RFQ             @relation(fields: [rfqId], references: [id])
+  quotation       Quotation       @relation(fields: [quotationId], references: [id])
+  vendor          Vendor          @relation(fields: [vendorId], references: [id])
+  approval        Approval?       @relation(fields: [approvalId], references: [id])
+  items           PurchaseOrderItem[]
+  invoices        Invoice[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String          @id @default(uuid())
+  purchaseOrderId String
+  itemName        String
+  quantity        Float
+  unit            String
+  unitPrice       Float
+  totalPrice      Float
+  createdAt       DateTime        @default(now())
+
+  purchaseOrder   PurchaseOrder   @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@map("purchase_order_items")
+}
+
+model Invoice {
+  id              String          @id @default(uuid())
+  invoiceNumber   String          @unique
+  purchaseOrderId String
+  vendorId        String
+  subtotal        Float           @default(0)
+  gstRate         Float           @default(18)
+  gstAmount       Float           @default(0)
+  grandTotal      Float           @default(0)
+  status          InvoiceStatus   @default(DRAFT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  purchaseOrder   PurchaseOrder   @relation(fields: [purchaseOrderId], references: [id])
+  vendor          Vendor          @relation(fields: [vendorId], references: [id])
+  items           InvoiceItem[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id              String          @id @default(uuid())
+  invoiceId       String
+  itemName        String
+  quantity        Float
+  unit            String
+  unitPrice       Float
+  gstAmount       Float           @default(0)
+  totalPrice      Float
+  createdAt       DateTime        @default(now())
+
+  invoice         Invoice         @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+model ActivityLog {
+  id              String          @id @default(uuid())
+  userId          String
+  action          String
+  entity          String
+  entityId        String?
+  details         String?
+  createdAt       DateTime        @default(now())
+
+  user            User            @relation(fields: [userId], references: [id])
+
+  @@map("activity_logs")
+}
+
+model Notification {
+  id              String          @id @default(uuid())
+  userId          String
+  title           String
+  message         String
+  isRead          Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+
+  user            User            @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}

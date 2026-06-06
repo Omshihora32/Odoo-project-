@@ -1,0 +1,358 @@
+Think of VendorBridge as a company buying something.
+
+### Example: Company wants to buy 50 laptops
+
+There are 4 people involved:
+
+| Role                | Who are they? | Goal                    |
+| ------------------- | ------------- | ----------------------- |
+| Vendor              | Seller        | Sell laptops            |
+| Procurement Officer | Buyer         | Find the best vendor    |
+| Manager             | Approver      | Approve spending        |
+| Admin               | System Owner  | Manage users and system |
+
+---
+
+# Step 1: Admin Sets Up The System
+
+Admin creates users.
+
+```text
+Admin
+ ├── Create Procurement Officer
+ ├── Create Manager
+ └── Create Vendor Accounts
+```
+
+Example:
+
+```text
+John → Procurement Officer
+Sarah → Manager
+ABC Computers → Vendor
+XYZ Electronics → Vendor
+```
+
+Admin is not involved in daily purchasing.
+
+---
+
+# Step 2: Procurement Officer Creates RFQ
+
+RFQ = Request For Quotation
+
+Procurement Officer says:
+
+```text
+We need 50 laptops.
+Budget = ₹25,00,000
+Deadline = 10 July
+```
+
+Creates:
+
+```text
+RFQ #101
+Purchase 50 Laptops
+```
+
+---
+
+# Step 3: Procurement Officer Assigns Vendors
+
+He selects vendors who can supply laptops.
+
+```text
+RFQ #101
+ ├── ABC Computers
+ ├── XYZ Electronics
+ └── Tech Solutions
+```
+
+Now vendors receive the RFQ.
+
+---
+
+# Step 4: Vendors Submit Quotations
+
+Vendor sees:
+
+```text
+RFQ #101
+Need 50 laptops
+```
+
+Vendor replies:
+
+### Vendor A
+
+```text
+Price = ₹24,00,000
+Delivery = 10 Days
+Warranty = 2 Years
+```
+
+### Vendor B
+
+```text
+Price = ₹23,50,000
+Delivery = 7 Days
+Warranty = 3 Years
+```
+
+### Vendor C
+
+```text
+Price = ₹25,00,000
+Delivery = 5 Days
+Warranty = 1 Year
+```
+
+Vendor's job ends here for now.
+
+---
+
+# Step 5: Procurement Officer Compares Quotations
+
+Now Procurement Officer reviews all quotations.
+
+He can see:
+
+| Vendor | Price  | Delivery | Warranty |
+| ------ | ------ | -------- | -------- |
+| A      | ₹24L   | 10 Days  | 2 Years  |
+| B      | ₹23.5L | 7 Days   | 3 Years  |
+| C      | ₹25L   | 5 Days   | 1 Year   |
+
+He decides:
+
+```text
+Vendor B is best.
+```
+
+He creates recommendation:
+
+```text
+Recommended Vendor:
+XYZ Electronics
+```
+
+---
+
+# Step 6: Manager Reviews
+
+Manager now gets the request.
+
+Manager sees:
+
+```text
+RFQ #101
+
+Recommended Vendor:
+XYZ Electronics
+
+Amount:
+₹23,50,000
+```
+
+Manager asks:
+
+```text
+Is budget okay?
+Is vendor acceptable?
+Do we really need this purchase?
+```
+
+---
+
+# Step 7A: Manager Approves
+
+If satisfied:
+
+```text
+APPROVED
+```
+
+Example:
+
+```text
+Remark:
+Proceed with purchase.
+```
+
+---
+
+# Step 7B: Manager Rejects
+
+If not satisfied:
+
+```text
+REJECTED
+```
+
+Example:
+
+```text
+Remark:
+Need more quotations.
+```
+
+Then process goes back to Procurement Officer.
+
+---
+
+# Step 8: Procurement Officer Creates Purchase Order
+
+After approval:
+
+```text
+PO-001
+Vendor: XYZ Electronics
+Amount: ₹23,50,000
+```
+
+Purchase Order (PO) is the official order.
+
+It means:
+
+```text
+Company officially agrees to buy.
+```
+
+---
+
+# Step 9: Vendor Receives PO
+
+Vendor sees:
+
+```text
+PO-001
+Approved
+```
+
+Now vendor starts delivery.
+
+```text
+50 laptops shipped
+```
+
+---
+
+# Step 10: Invoice
+
+After delivery:
+
+```text
+Invoice:
+₹23,50,000
+```
+
+Company processes payment.
+
+Vendor can check invoice status.
+
+---
+
+# Full Workflow
+
+```text
+ADMIN
+ ↓
+Creates Users
+ ↓
+
+PROCUREMENT OFFICER
+ ↓
+Creates RFQ
+ ↓
+Assigns Vendors
+ ↓
+
+VENDORS
+ ↓
+Submit Quotations
+ ↓
+
+PROCUREMENT OFFICER
+ ↓
+Compares Quotations
+ ↓
+Selects Best Vendor
+ ↓
+
+MANAGER
+ ↓
+Approve / Reject
+ ↓
+
+PROCUREMENT OFFICER
+ ↓
+Creates Purchase Order
+ ↓
+
+VENDOR
+ ↓
+Receives Purchase Order
+ ↓
+Delivers Goods
+ ↓
+
+PROCUREMENT OFFICER / ADMIN
+ ↓
+Generates Invoice
+ ↓
+
+VENDOR
+ ↓
+Receives Payment
+```
+
+# What Each Role Never Does
+
+### Vendor Never Does
+
+```text
+❌ Create RFQ
+❌ Approve RFQ
+❌ View other vendors
+❌ Compare quotations
+❌ Manage users
+```
+
+### Procurement Officer Never Does
+
+```text
+❌ Approve purchases
+❌ Manage users
+❌ Change system settings
+```
+
+### Manager Never Does
+
+```text
+❌ Create RFQ
+❌ Assign vendors
+❌ Generate PO
+❌ Manage vendors
+```
+
+### Admin Never Does
+
+```text
+❌ Submit quotations as vendor
+❌ Participate in vendor competition
+```
+
+A useful analogy:
+
+```text
+Vendor = Seller
+
+Procurement Officer = Buyer
+
+Manager = Boss who approves spending
+
+Admin = IT/System Administrator
+```
+
+If you're building the UI, the Procurement Officer is the main character. Around 70% of the business workflow happens through that role. The Manager mainly approves, the Vendor mainly responds to RFQs and receives orders, and the Admin mostly manages the system and users.

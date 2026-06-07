@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "npx prisma generate",
+  "installCommand": "npm install",
+  "outputDirectory": ".",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "prisma/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ]
+}

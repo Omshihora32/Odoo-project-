@@ -1,7 +1,12 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// In Vercel serverless, __dirname may not resolve as expected.
+// Try multiple paths to find .env file; Vercel uses env vars from dashboard anyway.
+if (!process.env.VERCEL) {
+  dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+  dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+}
 
 export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',

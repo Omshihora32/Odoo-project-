@@ -24,8 +24,7 @@ app.use(
         !origin ||
         allowedOrigins.includes(origin) ||
         origin.startsWith('http://localhost:') ||
-        origin.endsWith('.vercel.app') ||
-        origin.endsWith('.netlify.app')
+        origin.endsWith('.railway.app')
       ) {
         callback(null, true);
       } else {
@@ -42,13 +41,12 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ensure upload directory exists (use /tmp on Vercel serverless)
-const uploadDir = process.env.VERCEL
-  ? '/tmp/uploads'
-  : path.resolve(config.upload.dir);
+// Ensure upload directory exists
+const uploadDir = path.resolve(config.upload.dir);
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
+
 // Serve uploaded files statically
 app.use('/uploads', express.static(uploadDir));
 
@@ -63,13 +61,11 @@ app.get('/health', (req, res) => {
 // Global error handler (must be last)
 app.use(errorHandler);
 
-// Start server only when NOT running on Vercel (Vercel uses serverless functions)
-if (!process.env.VERCEL) {
-  const port = config.port || 5000;
-  app.listen(port, () => {
-    console.log(`[Server] Running in ${config.nodeEnv} mode on port ${port}`);
-    console.log(`[Server] API endpoints available at http://localhost:${port}/api`);
-  });
-}
+// Start server
+const port = config.port || 5000;
+app.listen(port, () => {
+  console.log(`[Server] Running in ${config.nodeEnv} mode on port ${port}`);
+  console.log(`[Server] API endpoints available at http://localhost:${port}/api`);
+});
 
 export default app;

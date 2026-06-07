@@ -1549,13 +1549,6 @@ VendorBridge/
 
 ## 🐛 Errors
 
-> Auto-scanned: 6/6/2026, 4:22:25 PM
+> Auto-scanned: 6/7/2026, 2:49:55 PM
 
-**1 issue(s) found:**
-
-| File | Line | Type | Message |
-|------|------|------|---------|
-| `backend/tsconfig.json` | 16 | ❌ | Option 'moduleResolution=node10' is deprecated and will stop functioning in TypeScript 7.0. Specify compilerOption '"ignoreDeprecations": "6.0"' to silence this error.
-  Visit https://aka.ms/ts6 for migration information. |
-
-> Paste this file into ChatGPT/Claude to fix errors.
+✅ No errors found!

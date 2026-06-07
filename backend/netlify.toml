@@ -1,8 +1,0 @@
-[build]
-  command = "npx prisma generate"
-  functions = "netlify/functions"
-
-[[redirects]]
-  from = "/*"
-  to = "/.netlify/functions/api"
-  status = 200
